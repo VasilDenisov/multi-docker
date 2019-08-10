@@ -1,0 +1,25 @@
+sudo: required
+services:
+    - docker
+
+before_install
+    - docker build -t vasild/react-test -f ./client/Dockerfile.dev ./client
+    
+script:
+    - docker run vasild/react-test npm test -- --coverage
+    
+after_success:
+    - docker build -t vasild/multi-client ./client
+    - docker build -t vasild/multi-nginx ./nginx
+    - docker build -t vasild/multi-server ./server
+    - docker build -t vasild/multi-worker ./worker
+    # Log in docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # Take those images and push them to docker hub
+    - docker push vasild/multi-client
+    - docker push vasild/multi-nginx
+    - docker push vasild/multi-server
+    - docker push vasild/multi-worker
+   
+    
+    
